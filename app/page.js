@@ -4,7 +4,7 @@ export default function Home() {
     <div>
       Hey this is next
       <br/>
-      <Button variant="outline">Button</Button>
+      <Button variant="journal">Button</Button>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ChevronRight, Book, Sparkles, Lock} from "lucide-react";
+import { Calendar, ChevronRight, Book, Sparkles, Lock, FileText, BarChart2} from "lucide-react";
 import { Card,CardContent} from "@/components/ui/card"
 import Link from "next/link"; 
 
@@ -89,6 +89,78 @@ export default function Home() {
           ))
         }
       </section>
+
+      <div className="mb-20 flex gap-20">
+        <div>
+          <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+            <FileText className="h-6 w-6 text-orange-600"/>
+          </div>
+          <h3 className="font-semibold text-xl text-black-900 mt-2 mb-2">Rich Text Editor</h3>
+          <p className="text-orange-900 mb-3">Express yourself fully with our powerful editor featuring:</p>
+          <ul>
+            <li className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-orange-400"/>
+              <span>Format text with ease</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-orange-400"/>
+              <span>Embed links</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="rounded-2xl p6 shadow-xl border border-orange-300 w-1/2 p-6 space-y-4">
+          <div className="flex gap-2 mb-6">
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+          </div>
+
+
+          <Skeleton className="h-4 bg-orange-50 rounded w-3/4" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-full" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-2/3" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-1/3" />
+        </div>
+  
+      </div>
+
+      <div className="mb-20 flex gap-20">
+        <div className="rounded-2xl p6 shadow-xl border border-orange-300 w-1/2 p-6 space-y-4">
+          <div className="flex gap-2 mb-6">
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+          </div>
+
+
+          <Skeleton className="h-4 bg-orange-50 rounded w-3/4" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-full" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-2/3" />
+          <Skeleton className="h-4 bg-orange-50 rounded w-1/3" />
+        </div>
+
+        <div>
+          <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+            <BarChart2 className="h-6 w-6 text-orange-600"/>
+          </div>
+          <h3 className="font-semibold text-xl text-black-900 mt-2 mb-2">Mood Analytics</h3>
+          <p className="text-orange-900 mb-3">Track your emotions with powerful analytics:</p>
+          <ul>
+            <li className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-orange-400"/>
+              <span>Visual mood trends</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-orange-400"/>
+              <span>Pattern recognition</span>
+            </li>
+          </ul>
+        </div>
+
+        
+  
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ChevronRight, Book, Sparkles, Lock, FileText, BarChart2} from "lucide-react";
 import { Card,CardContent} from "@/components/ui/card"
 import Link from "next/link"; 
+import { Testimonial } from "@/components/testimonials";
 
 const features = [
   {
@@ -127,17 +128,12 @@ export default function Home() {
 
       <div className="mb-20 flex gap-20">
         <div className="rounded-2xl p6 shadow-xl border border-orange-300 w-1/2 p-6 space-y-4">
-          <div className="flex gap-2 mb-6">
-            <div className="h-8 w-8 rounded-full bg-orange-100"/>
-            <div className="h-8 w-8 rounded-full bg-orange-100"/>
-            <div className="h-8 w-8 rounded-full bg-orange-100"/>
+          <div className="h-40 bg-gradient-to-t from-orange-100 to-orange-50 rounded-lg"></div>
+          <div className="flex justify-between">
+            <div className="h-4 w-16 bg-orange-50 rounded "/>
+            <div className="h-4 w-16 bg-orange-50 rounded "/>
+            <div className="h-4 w-16 bg-orange-50 rounded "/>
           </div>
-
-
-          <Skeleton className="h-4 bg-orange-50 rounded w-3/4" />
-          <Skeleton className="h-4 bg-orange-50 rounded w-full" />
-          <Skeleton className="h-4 bg-orange-50 rounded w-2/3" />
-          <Skeleton className="h-4 bg-orange-50 rounded w-1/3" />
         </div>
 
         <div>
@@ -161,6 +157,8 @@ export default function Home() {
         
   
       </div>
+
+      <Testimonial />
     </div>
   );
 }

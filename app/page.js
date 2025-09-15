@@ -4,6 +4,14 @@ import { Calendar, ChevronRight, Book, Sparkles, Lock, FileText, BarChart2} from
 import { Card,CardContent} from "@/components/ui/card"
 import Link from "next/link"; 
 import { Testimonial } from "@/components/testimonials";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import faqs from '@/data/faq'
+
 
 const features = [
   {
@@ -159,6 +167,23 @@ export default function Home() {
       </div>
 
       <Testimonial />
+
+      <div>
+        <h2 className="text-3xl font-bold text-center text-orange-900 mb-12">Frequently Asked Questions</h2>
+        <Accordion type="single" collapsible className="w-full mx-auto mb-20">
+          {
+            faqs.map((faq, index)=>(
+                <AccordionItem key={index} value={`item -${index}`}>
+                  <AccordionTrigger className="text-orange-900 text-lg">{faq.q}</AccordionTrigger>
+                  <AccordionContent className="text-black-700">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+            ))
+          }
+        </Accordion>
+
+      </div>
     </div>
   );
 }

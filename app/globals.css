@@ -130,3 +130,8 @@
 html {
   scroll-behavior: smooth;
 }
+
+.ql-editor {
+  min-height: 200px;
+  height: auto;
+}

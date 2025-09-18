@@ -5,6 +5,7 @@ import { db } from "@/lib/prisma"
 import { getMoodById } from "@/app/lib/moods"
 import { getPixabayImage } from "@/actions/public";
 import { request } from "@arcjet/next";
+import aj from "@/lib/arcjet";
 
 const { auth } = require("@clerk/nextjs/server")
 
@@ -17,8 +18,8 @@ export async function createJournalEntry(data) {
         const req = await request()
         const decision = await aj.protect(req, {
             userId,
-            requested: 1,
-        })
+            requested: 1, // Specify how many tokens to consume
+            });
 
         if (decision.isDenied()) {
             if(decision.reason.isRateLimit()) {

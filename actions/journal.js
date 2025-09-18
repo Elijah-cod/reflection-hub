@@ -1,25 +1,47 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { db } from "@/lib/prisma"
+import { getMoodById } from "@/app/lib/moods"
+import { getPixabayImage } from "@/actions/public";
+import { request } from "@arcjet/next";
 
 const { auth } = require("@clerk/nextjs/server")
 
-
 export async function createJournalEntry(data) {
-    try{
-        const {userId} = await auth()
+    try {
+        const { userId } = await auth()
         if (!userId) throw new Error("Unauthorized")
         
-        //rate limiting
-
-        const user = await db.user.findUnique({
-            where: {clerkUserId: userId},
+        //Rate limiting
+        const req = await request()
+        const decision = await aj.protect(req, {
+            userId,
+            requested: 1,
         })
 
-        if (!user) throw new Error ("User not found")
-        
-        const mood = MOODS(data.mood.toUpperCase())
-        if (!mood) throw new Error ("Invalid mood")
+        if (decision.isDenied()) {
+            if(decision.reason.isRateLimit()) {
+                const {remaining, reset } = decision.reason
+                console.error({
+                    code: "RATE_LIMIT_EXCEEDED",
+                    details: {
+                        remaining,
+                        resetInSeconds: reset,
+                    },
+                })
+                throw new Error("Too many requests. Please try again later.")
+            }
+            throw new Error("Request Blocked.")
+        }
+
+        const user = await db.user.findUnique({
+            where: { clerkUserId: userId },
+        })
+        if (!user) throw new Error("User not found")
+
+        const mood = getMoodById(data.mood)
+        if (!mood) throw new Error("Invalid mood")
 
         const moodImageUrl = await getPixabayImage(data.moodQuery)
 
@@ -36,9 +58,9 @@ export async function createJournalEntry(data) {
         })
 
         await db.draft.deleteMany({
-            where: {userId: user.id},
+            where: { userId: user.id },
         })
-        
+
         revalidatePath("/dashboard")
         return entry
     } catch (error) {

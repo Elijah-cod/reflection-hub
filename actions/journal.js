@@ -6,8 +6,8 @@ import { getMoodById } from "@/app/lib/moods"
 import { getPixabayImage } from "@/actions/public";
 import { request } from "@arcjet/next";
 import aj from "@/lib/arcjet";
+import { auth } from "@clerk/nextjs/server";
 
-const { auth } = require("@clerk/nextjs/server")
 
 export async function createJournalEntry(data) {
     try {

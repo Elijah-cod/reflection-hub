@@ -22,6 +22,7 @@ import { createJournalEntry } from "@/actions/journal";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getCollections, createCollection } from "@/actions/collection";
+import CollectionForm from "@/components/collection-form";
 
 const ReactQuill = dynamic(()=> import("react-quill-new"), {ssr: false})
 
@@ -48,9 +49,8 @@ const JournalEntryPage = () => {
 
     const router = useRouter()
 
-    console.log(collections, "collections")
 
-    const {register, handleSubmit, control, formState: {errors}, watch}= useForm({
+    const {register, handleSubmit, control, formState: {errors}, watch, setValue}= useForm({
         resolver: zodResolver(journalSchema),
         defaultValues: {
             title: "",
@@ -64,7 +64,6 @@ const JournalEntryPage = () => {
         fetchCollections()
     }, [])
 
-    const isLoading = actionLoading
 
     useEffect(() => {
         if(actionResult && !actionLoading){
@@ -82,6 +81,21 @@ const JournalEntryPage = () => {
             moodQuery: mood.pixabayQuery,
         })
     })
+
+    useEffect(() => {
+        if(createdCollection){
+            setIsCollectionDialogOpen(false)
+            fetchCollections()
+            setValue("collectionId", createdCollection.id)
+            toast.success(`Collection ${createdCollection.name} created!`)
+        }
+    }, [createdCollection])
+
+    const handleCreateCollection = async (data) => {
+        createCollectionFn(data)
+    }
+
+    const isLoading = actionLoading || collectionsLoading
 
     return(
         <div className="py-8">
@@ -184,12 +198,15 @@ const JournalEntryPage = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {
-                                        Object.values(MOODS).map((mood)=>(
-                                            <SelectItem key={mood.id} value={mood.id}>
-                                                <span>{mood.emoji} {mood.label}</span>
+                                        collections?.map((collection)=>(
+                                            <SelectItem key={collection.id} value={collection.id}>
+                                                {collection.name}
                                             </SelectItem>
                                         ))
                                     }
+                                    <SelectItem value = "new">
+                                        <span className="text-orange-600"> + Create New Collection</span>
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         )}
@@ -202,9 +219,16 @@ const JournalEntryPage = () => {
                 </div>
 
                 <div className="space-y-4 flex">
-                    <Button type="submit" variant="journal">Publish</Button>
+                    <Button type="submit" variant="journal" disabled = {actionLoading}>Publish</Button>
                 </div>
             </form>
+
+            <CollectionForm
+                loading = {createCollectionLoading}
+                onSuccess =  {handleCreateCollection}
+                open = {isCollectionDialogOpen}
+                setOpen = {setIsCollectionDialogOpen}
+            />
         </div>
     )
 }

@@ -41,7 +41,7 @@ export async function getCollections() {
             where: {
                 userId: user.Id,
             },
-            orderBY: {
+            orderBy: {
                 createdAt: "desc"
             }
         })

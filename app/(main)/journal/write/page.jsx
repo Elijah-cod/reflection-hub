@@ -179,7 +179,7 @@ const JournalEntryPage = () => {
                 </div>
 
 
-                <div className="space-y-2">
+                <div className="space-y-2 mt-6">
                     <label className="text-sm font-medium">Add to Collection (optional)</label>
                     <Controller 
                     name="collectionId"
@@ -218,7 +218,7 @@ const JournalEntryPage = () => {
                     }
                 </div>
 
-                <div className="space-y-4 flex">
+                <div className="space-y-4 flex mt-3">
                     <Button type="submit" variant="journal" disabled = {actionLoading}>Publish</Button>
                 </div>
             </form>

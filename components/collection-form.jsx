@@ -37,7 +37,7 @@ const CollectionForm = ({ onSuccess, open, setOpen, loading }) => {
         <Dialog open = {open} onOpenChange = {setOpen}>
             <DialogContent>
                 <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogTitle>Create New Collection</DialogTitle>
                 </DialogHeader>
                 {loading && <BarLoader color="orange" width={"100%"}/>}
 

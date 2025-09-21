@@ -9,14 +9,25 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Reflection Hub",
   description: "A Journaling App",
-  icons: {
-    icon: "/favicon.png", 
-  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Light mode favicon */}
+        <link
+          rel="icon"
+          href="/favicon-morning.png"
+          media="(prefers-color-scheme: light)"
+        />
+        {/* Dark mode favicon */}
+        <link
+          rel="icon"
+          href="/favicon-night.png"
+          media="(prefers-color-scheme: dark)"
+        />
+      </head>
       <ClerkProvider>
         <body className={`${inter.className}`}>
           <Header />

@@ -6,7 +6,7 @@ import CollectionForm from "@/components/collection-form"
 import { toast } from "sonner";
 import { createCollection } from "@/actions/collection";
 import useFetch from "@/hooks/use-fetch";
-import { data } from "autoprefixer";
+
 
 
 const Collections = ({ collections = [], entriesByCollection }) => {
@@ -25,7 +25,9 @@ const Collections = ({ collections = [], entriesByCollection }) => {
         }
     }, [createdCollection])
 
-    const handleCreateCollection = async() => { createCollection(data) }
+    const handleCreateCollection = async(data) => { 
+        createCollectionFn(data)
+    }
 
     if (collections.length === 0) return <></>
     return(

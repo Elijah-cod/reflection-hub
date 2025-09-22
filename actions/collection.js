@@ -2,31 +2,36 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
+import { collectionSchema } from "@/app/lib/schema";
 
 export async function createCollection(data) {
-    try {
-        const {userId} = await auth()
-        if(!userId) throw new Error("Unauthorized")
-        
-        const user = await db.user.findUnique({
-                    where: { clerkUserId: userId },
-                })
-        if (!user) throw new Error("User not found")
-        
-        const collection = await db.collection.create({
-            data: {
-                name: data.name,
-                description: data.description,
-                userId: user.id,
-            },
-        })
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
 
-        revalidatePath("/dashboard")
-        return collection
-    } catch (error) {
-        throw new Error(error.message)
-    }
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!user) throw new Error("User not found");
+
+    // ✅ validate + sanitize incoming data
+    const validated = collectionSchema.parse(data);
+
+    const collection = await db.collection.create({
+      data: {
+        name: validated.name,                  // guaranteed string
+        description: validated.description ?? null, // avoid undefined
+        userId: user.id,
+      },
+    });
+
+    revalidatePath("/dashboard");
+    return collection;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 }
+
 
 export async function getCollections() {
         const {userId} = await auth()

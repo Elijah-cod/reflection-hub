@@ -1,0 +1,40 @@
+import { getJournalEntries } from "@/actions/journal";
+import React from "react";
+import { getCollection } from "@/actions/collection";
+import DeleteCollectionDialog from "../_components/delete-collection";
+import JournalFilters from "../_components/journal-filters";
+
+
+const CollectionsPage = async({params}) => {
+    const {collectionid} =  params
+    const entries = await getJournalEntries(collectionid)
+    const collection = await getCollection(collectionid)
+
+    return(
+        <div className="space-y-6">
+            <div className="flex flex-col justify-between">
+                <div className="flex justify-between">
+                    <h1 className="text-4xl font-bold gradient-title">
+                        {
+                            collectionid === "unorganized" ? "Unorganized Entries" : collection?.name || "Collection"
+                        }
+                    </h1>
+                    {
+                        collection && <DeleteCollectionDialog collection = {collection} entriesCount = {entries.data.entries.length} />
+                    }
+                </div>
+                {
+                    collection?.description && (
+                        <h2 className="font-extralight pl-1">{collection?.description}</h2>
+                    )
+                }
+            </div>
+
+            {/* Render entries */}
+            <JournalFilters entries = {entries.data.entries}/>
+        </div>
+    )
+}
+
+
+export default CollectionsPage

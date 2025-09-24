@@ -54,3 +54,25 @@ export async function getCollections() {
         return collections
 }
 
+
+export async function getCollection(collectionId) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+  if (!user) throw new Error("User not found");
+
+  const collection = await db.collection.findUnique({
+    where: { id: collectionId }, // <-- just pass the string here
+  });
+
+  if (!collection || collection.userId !== user.id) {
+    throw new Error("Collection not found or not yours");
+  }
+
+  return collection;
+}
+
+

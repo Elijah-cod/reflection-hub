@@ -65,12 +65,8 @@ export async function getCollection(collectionId) {
   if (!user) throw new Error("User not found");
 
   const collection = await db.collection.findUnique({
-    where: { id: collectionId }, // <-- just pass the string here
+    where: { id: collectionId }, 
   });
-
-  if (!collection || collection.userId !== user.id) {
-    throw new Error("Collection not found or not yours");
-  }
 
   return collection;
 }

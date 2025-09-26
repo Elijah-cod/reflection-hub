@@ -102,23 +102,25 @@ export default async function Home() {
         }
       </section>
 
-      <div className="mb-20 flex gap-20">
-        <div>
+      <div className="mb-20 flex flex-col md:flex-row gap-10 md:gap-20">
+        <div className="order-1 md:order-none">
           <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
             <FileText className="h-6 w-6 text-orange-600"/>
           </div>
-          <h3 className="font-semibold text-xl text-black-900 mt-2 mb-2">Rich Text Editor</h3>
-          <p className="text-orange-900 mb-3">Express yourself fully with our powerful editor featuring:</p>
-          <ul>
-            <li className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-orange-400"/>
-              <span>Format text with ease</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-orange-400"/>
-              <span>Embed links</span>
-            </li>
-          </ul>
+          <div className="order-2 md:order-none">
+            <h3 className="font-semibold text-xl text-black-900 mt-2 mb-2">Rich Text Editor</h3>
+            <p className="text-orange-900 mb-3">Express yourself fully with our powerful editor featuring:</p>
+            <ul>
+              <li className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-orange-400"/>
+                <span>Format text with ease</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-orange-400"/>
+                <span>Embed links</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="rounded-2xl p6 shadow-xl border border-orange-300 w-1/2 p-6 space-y-4">
@@ -137,7 +139,7 @@ export default async function Home() {
   
       </div>
 
-      <div className="mb-20 flex gap-20">
+      <div className="mb-20 flex flex-col md:flex-row gap-10 md:gap-20">
         <div className="rounded-2xl p6 shadow-xl border border-orange-300 w-1/2 p-6 space-y-4">
           <div className="h-40 bg-gradient-to-t from-orange-100 to-orange-50 rounded-lg"></div>
           <div className="flex justify-between">
@@ -164,9 +166,6 @@ export default async function Home() {
             </li>
           </ul>
         </div>
-
-        
-  
       </div>
 
       <Testimonial />

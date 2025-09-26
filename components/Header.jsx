@@ -55,7 +55,10 @@ const Header = async() => {
                     </SignedOut>
 
                     <SignedIn>
-                        <UserMenu />
+                        <div className = "mr-10 md:mr-0">
+                            <UserMenu />
+                        </div>
+                        
                     </SignedIn>
                 </div>
             </nav>

@@ -177,3 +177,46 @@ export async function deleteJournalEntry(entryId) {
         throw new Error(error.message)
     }
 }
+
+
+export async function updateJournalEntry(data) {
+    try {
+        const { userId } = await auth();
+        if (!userId) throw new Error("Unauthorized");
+
+        const user = await db.user.findUnique({
+            where: { clerkUserId: userId },
+        });
+        if (!user) throw new Error("User not found");
+
+        const existingEntry = await db.entry.findFirst({
+            where: { id: data.id },
+        })
+
+        if (!existingEntry) throw new Error("Entry not found")
+        const mood = getMoodById(data.mood)
+        if (!mood) throw new Error("Invalid mood")
+        
+        let moodImageUrl = existingEntry.moodImageUrl
+
+        if(existingEntry.mood !== mood.id)
+            moodImageUrl = await getPixabayImage(data.moodQuery)
+
+        const updatedEntry = await db.entry.update({
+            where: {id: data.id},
+            data: {
+                title: data.title,
+                content: data.content,
+                mood: mood.id,
+                moodScore: mood.score,
+                moodImageUrl,
+                collectionId: data.collectionId || null,
+            }
+        })
+        revalidatePath("/dashboard")
+        revalidatePath(`/journal/${data.id}`)
+        return updatedEntry
+    } catch (error) {
+        throw new Error(error.message)
+    }
+}

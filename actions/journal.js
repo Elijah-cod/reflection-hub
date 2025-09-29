@@ -7,6 +7,7 @@ import { getPixabayImage } from "@/actions/public";
 import { request } from "@arcjet/next";
 import aj from "@/lib/arcjet";
 import { auth } from "@clerk/nextjs/server";
+import { success } from "zod";
 
 
 
@@ -216,6 +217,67 @@ export async function updateJournalEntry(data) {
         revalidatePath("/dashboard")
         revalidatePath(`/journal/${data.id}`)
         return updatedEntry
+    } catch (error) {
+        throw new Error(error.message)
+    }
+}
+
+
+export async function getDraft() {
+    try {
+        const { userId } = await auth();
+        if (!userId) throw new Error("Unauthorized");
+
+        const user = await db.user.findUnique({
+            where: { clerkUserId: userId },
+        });
+        if (!user) throw new Error("User not found");
+
+        const draft = await db.draft.findUnique({
+            where: { userId: user.id },
+        })
+        
+        return {
+            success: true,
+            data: draft
+        }
+    } catch (error) {
+        throw new Error(error.message)
+    }
+}
+
+
+export async function saveDraft(data) {
+    try {
+        const { userId } = await auth();
+        if (!userId) throw new Error("Unauthorized");
+
+        const user = await db.user.findUnique({
+            where: { clerkUserId: userId },
+        });
+        if (!user) throw new Error("User not found");
+
+        const draft = await db.draft.upsert({
+            where: { userId: user.id },
+            create: {
+                title: data.title,
+                content: data.content,
+                mood: data.mood,
+                userId: user.id,
+            },
+            update: {
+                title: data.title,
+                content: data.content,
+                mood: data.mood,
+            }
+        })
+
+        revalidatePath('/dashboard')
+        
+        return {
+            success: true,
+            data: draft
+        }
     } catch (error) {
         throw new Error(error.message)
     }

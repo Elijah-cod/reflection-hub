@@ -18,22 +18,45 @@ import {
 import { getMoodById, MOODS } from "@/app/lib/moods";
 import { Button } from "@/components/ui/button";
 import useFetch from "@/hooks/use-fetch";
-import { createJournalEntry } from "@/actions/journal";
-import { useRouter } from "next/navigation";
+import { createJournalEntry, getDraft, getJournalEntry, saveDraft, updateJournalEntry } from "@/actions/journal";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getCollections, createCollection } from "@/actions/collection";
 import CollectionForm from "@/components/collection-form";
+import { Loader2 } from "lucide-react";
+
 
 const ReactQuill = dynamic(()=> import("react-quill-new"), {ssr: false})
 
 const JournalEntryPage = () => {
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState (false)
+    const searchParams = useSearchParams()
+    const editId = searchParams.get('edit')
+    const [isEditMode, setIsEditMode] = useState(false)
+
+    const {
+        loading: entryLoading,
+        data: existingEntry,
+        fn: fetchEntry,
+    } = useFetch(getJournalEntry)
+
+    const {
+        loading: draftLoading,
+        data: draftData,
+        fn: fetchDraft,
+    } = useFetch(getDraft)
+
+    const {
+        loading: savingDraft,
+        fn: saveDraftFn,
+        data: savedDraft
+    } = useFetch(saveDraft)
 
     const {
         loading: actionLoading,
         fn: actionFn,
         data: actionResult,
-    } = useFetch(createJournalEntry)
+    } = useFetch(isEditMode ? updateJournalEntry : createJournalEntry)
 
     const {
         loading: collectionsLoading,
@@ -50,7 +73,7 @@ const JournalEntryPage = () => {
     const router = useRouter()
 
 
-    const {register, handleSubmit, control, formState: {errors}, watch, setValue}= useForm({
+    const {register, handleSubmit, control, formState: {errors, isDirty}, watch, setValue, reset}= useForm({
         resolver: zodResolver(journalSchema),
         defaultValues: {
             title: "",
@@ -62,13 +85,56 @@ const JournalEntryPage = () => {
 
     useEffect(() => {
         fetchCollections()
-    }, [])
 
+        if(editId) {
+            setIsEditMode(true)
+            fetchEntry(editId)
+        } else {
+            setIsEditMode(false)
+            fetchDraft()
+        }
+    }, [editId])
+
+    useEffect(() => {
+        if (isEditMode && existingEntry) {
+            reset({
+                title: existingEntry.title || "",
+                content: existingEntry.content || "",
+                mood: existingEntry.mood || "",
+                collectionId: existingEntry.collectionId || ""
+            })
+        } else if (draftData?.success && draftData?.data) {
+            reset(
+                {
+                    title: draftData.data.title || "",
+                    content: draftData.data.content || "",
+                    mood: draftData.data.mood || "",
+                    collectionId: ""
+                }
+            )
+        } else {
+            reset ({
+                title: "",
+                content: "",
+                mood: "",
+                collectionId: ""
+            })
+        }
+    }, [draftData, isEditMode, existingEntry])
 
     useEffect(() => {
         if(actionResult && !actionLoading){
+
+            if(!isEditMode){ //Clearing draft when creating a new journal entry
+                saveDraftFn({
+                    title: "",
+                    content: "",
+                    mood: ""
+                })
+            }
+
             router.push(`/collection/${actionResult.collectionId ? actionResult.collectionId : "unorganized"}`)
-            toast.success("Entry created successfully")
+            toast.success(`Entry ${isEditMode ? "updated": "created"} successfully`)
         }
     }, [actionResult, actionLoading])
 
@@ -79,6 +145,7 @@ const JournalEntryPage = () => {
             ...data,
             moodScore: mood.score,
             moodQuery: mood.pixabayQuery,
+            ...(isEditMode && {id: editId})
         })
     })
 
@@ -91,16 +158,35 @@ const JournalEntryPage = () => {
         }
     }, [createdCollection])
 
+    const formData = watch()
+
     const handleCreateCollection = async (data) => {
         createCollectionFn(data)
     }
 
-    const isLoading = actionLoading || collectionsLoading
+    const handleSaveDraft = async () => {
+        if (!isDirty) {
+            toast.error("No changes to save")
+            return
+        } 
+        await saveDraftFn(formData)
+    }
+
+    useEffect(() => {
+        if(savedDraft?.success && !savingDraft) {
+            toast.success("Draft saved successfully")
+        }
+    }, [savedDraft, savingDraft])
+    const isLoading = actionLoading || collectionsLoading || entryLoading || draftLoading || savingDraft
 
     return(
         <div className="py-8">
             <form className="space-y-2 mx-auto" onSubmit={onSubmit}>
-                <h1 className="text-5xl md:text-6xl gradient-title">What&apos;s on your mind</h1>
+                <h1 className="text-5xl md:text-6xl gradient-title">
+                    {
+                        isEditMode ? "Edit Entry" : "What's on your mind?"
+                    }
+                </h1>
 
                 {isLoading && <BarLoader color="orange" width={"100%"}/>}
 
@@ -218,8 +304,35 @@ const JournalEntryPage = () => {
                     }
                 </div>
 
-                <div className="space-y-4 flex mt-3">
-                    <Button type="submit" variant="journal" disabled = {actionLoading}>Publish</Button>
+                <div className="space-x-4 flex mt-3">
+                    {
+                        !isEditMode && (
+                            <Button
+                                onClick = {handleSaveDraft}
+                                type = "button"
+                                variant= "outline"
+                                disabled = {savingDraft || !isDirty}
+                            >
+                                {savingDraft && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                Save as Draft
+                            </Button>
+                        )
+                    }
+                    <Button type="submit" variant="journal" disabled = {actionLoading || !isDirty}>{isEditMode ? "Update" : "Publish"}</Button>
+                    {
+                        isEditMode && (
+                            <Button
+                                onClick = { (e) => {
+                                    e.preventDefault()
+                                    router.push(`/journal/${existingEntry.id}`)
+                                }
+                                }
+                                variant= "destructive"
+                            >
+                                Cancel
+                            </Button>
+                        )
+                    }
                 </div>
             </form>
 

@@ -46,7 +46,7 @@ export async function createJournalEntry(data) {
         if (!mood) throw new Error("Invalid mood")
 
         const moodImageUrl = await getPixabayImage(data.moodQuery)
-
+        
         const entry = await db.entry.create({
             data: {
                 title: data.title,
@@ -119,5 +119,35 @@ export async function getJournalEntries({collectionId, orderBy = "desc"} = {}) {
             success: false,
             error: error.message,
         }
+    }
+}
+
+export async function getJournalEntry(entryId) {
+    try {
+        const { userId } = await auth ()
+        if (!userId) throw new Error("Unauthorized")
+
+        const user = await db.user.findUnique({
+            where: {clerkUserId: userId}
+        })
+
+        if (!user) throw new Error ("User not found")
+        
+        const entry = await db.entry.findFirst ({
+            where: { id: entryId },
+            include: {
+                collection: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+
+        if (!entry) throw new Error("Entry not found")
+        return entry
+    } catch (error) {
+        throw new Error (error.message)
     }
 }

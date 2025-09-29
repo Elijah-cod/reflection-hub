@@ -24,13 +24,31 @@ export const getDailyPrompt = unstable_cache(
     }
 )
 
+// export async function getPixabayImage(image) {
+//     try {
+//         const res = await fetch(`https://pixabay.com/api?q=${image}&key=${process.env.PIXABAY_API_KEY}&min_width=1280&min_height=720&image_type=illustration&category=feelings`)
+//         const data = await res.json()
+//         return data.hits[0]?.largeImageURL || null
+//     } catch (error){
+//         console.error("Pixabay API Error:", error)
+//         return null
+//     }
+// }
+
 export async function getPixabayImage(image) {
-    try {
-        const res = await fetch(`https://pixabay.com/api?q=${image}&key=${process.env.PIXABAY_API_KEY}&min_width=1280&min_height=720&image_type=illustration&category=feelings`)
-        const data = await res.json()
-        return data.hits[0]?.largeImageUrl || null
-    } catch (error){
-        console.error("Pixabay API Error:", error)
-        return null
+  try {
+    const res = await fetch(
+      `https://pixabay.com/api/?key=${process.env.PIXABAY_API_KEY}&q=${encodeURIComponent(image)}&min_width=1280&min_height=720&image_type=illustration&category=feelings`
+    );
+    const data = await res.json();
+    if (!data.hits || data.hits.length === 0) {
+      console.warn(`No images found for query: ${image}`);
+      return null;
     }
+
+    return data.hits[0]?.largeImageURL || null; 
+  } catch (error) {
+    console.error("Pixabay API Error:", error);
+    return null;
+  }
 }

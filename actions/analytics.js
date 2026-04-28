@@ -58,11 +58,13 @@ export async function getAnalytics(period = "30d") {
 
     const overallStats = {
         totalEntries: entries.length,
-        averageScore: Number(
-            (
-                entries.reduce((acc, entry) => acc + entry.moodScore, 0) / entries.length
-            ).toFixed(1)
-        ),
+        averageScore: entries.length > 0
+            ? Number(
+                (
+                    entries.reduce((acc, entry) => acc + entry.moodScore, 0) / entries.length
+                ).toFixed(1)
+            )
+            : 0,
         mostFrequentedMood: Object.entries(
             entries.reduce((acc, entry) => {
                 acc[entry.mood] = (acc[entry.mood] || 0) + 1

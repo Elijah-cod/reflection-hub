@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import React, { useState, useTransition } from "react";
 import {
   Select,
   SelectContent,
@@ -8,9 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import useFetch from "@/hooks/use-fetch";
 import { getAnalytics } from "@/actions/analytics";
-import { useUser } from "@clerk/nextjs";
 import AnalyticsSkeleton from "./analytics-skeleton";
 import {
   Card,
@@ -19,8 +18,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { getMoodById, getMoodTrend } from "@/app/lib/moods";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, parseISO } from "date-fns";
+
+const MoodChart = dynamic(() => import("./mood-chart"), {
+    loading: () => (
+        <div className="h-[300px] w-full animate-pulse rounded-lg bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 opacity-75" />
+    ),
+})
 
 const timeOptions = [
   { value: "7d", label: "Last 7 Days" },
@@ -28,46 +31,31 @@ const timeOptions = [
   { value: "30d", label: "Last 30 Days" },
 ];
 
-const MoodAnalytics = () => {
-    const [period, setPeriod] = useState("7d")
+const MoodAnalytics = ({ initialAnalytics, initialPeriod = "7d" }) => {
+    const [period, setPeriod] = useState(initialPeriod)
+    const [analytics, setAnalytics] = useState(initialAnalytics)
+    const [isPending, startTransition] = useTransition()
 
-    const {
-        loading,
-        data: analytics,
-        fn: fetchAnalytics
-    }= useFetch(getAnalytics)
+    const handlePeriodChange = (nextPeriod) => {
+        setPeriod(nextPeriod)
 
-    const {isLoaded} = useUser()
+        startTransition(async() => {
+            const nextAnalytics = await getAnalytics(nextPeriod)
+            setAnalytics(nextAnalytics)
+        })
+    }
 
-    useEffect(() => {
-        fetchAnalytics(period)
-    }, [period])
-
-    if (loading || !analytics?.data || !isLoaded) {
+    if (!analytics?.data) {
         return <AnalyticsSkeleton />
     }
 
     const {timeline, stats} = analytics.data
 
-    const CustomTooltip = ({active, payload, label}) => {
-        if (active && payload?.length) {
-            return (
-                <div className="bg-white p-4 border rounded-lg shadow-lg">
-                    <p className="font-medium">
-                        {format(parseISO(label), "MMM d, yyyy")}
-                    </p>
-                    <p className="text-orange-600">Average Mood: {payload[0].value}</p>
-                    <p className="text-blue-600">Entries: {payload[1].value}</p>
-                </div>
-            )
-        }
-    }
-
     return(
         <>
             <div className="flex justify-between items-center">
                 <h2 className="text-5xl font-bold gradient-title">Dashboard</h2>
-                <Select value={period} onValueChange = {setPeriod}>
+                <Select value={period} onValueChange = {handlePeriodChange} disabled={isPending}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue />
                     </SelectTrigger>
@@ -124,31 +112,7 @@ const MoodAnalytics = () => {
                             <CardTitle>Mood Timeline</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart
-                                        data={timeline}
-                                        margin={{
-                                        top: 5,
-                                        right: 30,
-                                        left: 20,
-                                        bottom: 5,
-                                        }}
-                                    >
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis 
-                                            dataKey="date" 
-                                            tickFormatter={(date) => format(parseISO(date), "MMM d")}
-                                        />
-                                        <YAxis yAxisId="left" domain={[0, 10]}/>
-                                        <YAxis yAxisId="right" domain={[0, "auto"]} orientation="right"/>
-                                        <Tooltip content={<CustomTooltip />}/>
-                                        <Legend />
-                                        <Line yAxisId="left" type="monotone" dataKey="averageScore" stroke="#8884d8" activeDot={{ r: 8 }}  name="Average Mood" strokeWidth={2}/>
-                                        <Line yAxisId="right" type="monotone" dataKey="entryCount" stroke="#82ca9d" name="Number of Entries" strokeWidth={2}/>
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
+                            <MoodChart timeline={timeline} />
                         </CardContent>
                 </Card>
             </div>

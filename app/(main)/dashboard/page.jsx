@@ -1,13 +1,15 @@
 import { getCollections } from "@/actions/collection";
+import { getAnalytics } from "@/actions/analytics";
 import { getJournalEntries } from "@/actions/journal";
 import React from "react";
 import Collections from "./_components/collections";
 import MoodAnalytics from "./_components/mood-analytics";
 
 const Dashboard = async() =>{
-    const [collections, entriesData] = await Promise.all([
+    const [collections, entriesData, analytics] = await Promise.all([
         getCollections(),
         getJournalEntries(),
+        getAnalytics("7d"),
     ])
 
     const entriesByCollection = entriesData?.data.entries.reduce((acc, entry) => {
@@ -23,7 +25,7 @@ const Dashboard = async() =>{
     return (
         <div className="px-4 py-8 space-y-8">
             <section className="space-y-4">
-                <MoodAnalytics />
+                <MoodAnalytics initialAnalytics={analytics} />
             </section>
 
             <Collections collections = {collections} entriesByCollection = {entriesByCollection} />

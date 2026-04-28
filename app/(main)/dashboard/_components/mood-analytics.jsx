@@ -50,6 +50,7 @@ const MoodAnalytics = ({ initialAnalytics, initialPeriod = "7d" }) => {
     }
 
     const {timeline, stats} = analytics.data
+    const hasEntries = stats.hasEntries
 
     return(
         <>
@@ -88,8 +89,10 @@ const MoodAnalytics = ({ initialAnalytics, initialPeriod = "7d" }) => {
                             <CardTitle className="text-sm font-medium">Average Mood</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold">{stats.averageScore} / 10</p>
-                            <p className="text-xs text-muted-foreground">Overall mood score</p>
+                            <p className="text-2xl font-bold">{hasEntries ? `${stats.averageScore} / 10` : "-- / 10"}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {hasEntries ? "Overall mood score" : "Add your first entry to start tracking mood"}
+                            </p>
                         </CardContent>
                     </Card>
 
@@ -99,8 +102,14 @@ const MoodAnalytics = ({ initialAnalytics, initialPeriod = "7d" }) => {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold flex items-center gap-2">
-                                {getMoodById(stats.mostFrequentedMood)?.emoji} {" "}
-                                {getMoodTrend(stats.averageScore)}
+                                {hasEntries ? (
+                                    <>
+                                        {getMoodById(stats.mostFrequentedMood)?.emoji} {" "}
+                                        {getMoodTrend(stats.averageScore)}
+                                    </>
+                                ) : (
+                                    <span>No mood data yet.</span>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

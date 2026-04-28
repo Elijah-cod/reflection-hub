@@ -9,10 +9,8 @@ import {
 import { Button } from "./ui/button";
 import { FolderOpen, PenBox } from "lucide-react";
 import UserMenu from "./user-menu";
-import { checkUser } from "@/lib/checkUser";
 
-const Header = async() => {
-    await checkUser()
+const Header = () => {
     return(
         <header className="container mx-auto">
             <nav className="flex justify-between items-center">
@@ -67,5 +65,4 @@ const Header = async() => {
 }
 
 export default Header
-
 

@@ -3,7 +3,6 @@ import "./globals.css";
 import {Inter} from "next/font/google";
 import {ClerkProvider} from '@clerk/nextjs'
 import { Toaster } from "@/components/ui/sonner"
-import Script from "next/script";
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -40,7 +39,6 @@ export default function RootLayout({ children }) {
               <p>Keep Journaling</p>
             </div>
           </footer>
-          <Script src="https://example.com/some-script.js" strategy="lazyOnload" />
         </body>
       </ClerkProvider>
     </html>

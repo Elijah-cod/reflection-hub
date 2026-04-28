@@ -1,13 +1,13 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_noStore as noStore } from "next/cache"
 import { db } from "@/lib/prisma"
 import { getMoodById } from "@/app/lib/moods"
 import { getPixabayImage } from "@/actions/public";
 import { request } from "@arcjet/next";
 import aj from "@/lib/arcjet";
 import { auth } from "@clerk/nextjs/server";
-import { success } from "zod";
+import { requireCurrentDbUser } from "@/lib/current-user";
 
 
 
@@ -38,13 +38,24 @@ export async function createJournalEntry(data) {
             throw new Error("Request Blocked.")
         }
 
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId },
-        })
-        if (!user) throw new Error("User not found")
+        const user = await requireCurrentDbUser()
 
         const mood = getMoodById(data.mood)
         if (!mood) throw new Error("Invalid mood")
+
+        if (data.collectionId) {
+            const collection = await db.collection.findFirst({
+                where: {
+                    id: data.collectionId,
+                    userId: user.id,
+                },
+                select: {
+                    id: true,
+                },
+            })
+
+            if (!collection) throw new Error("Collection not found")
+        }
 
         const moodImageUrl = await getPixabayImage(data.moodQuery)
 
@@ -73,14 +84,8 @@ export async function createJournalEntry(data) {
 
 export async function getJournalEntries({ collectionId, orderBy = "desc" } = {}) {
     try {
-        const { userId } = await auth()
-        if (!userId) throw new Error("Unauthorized")
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId }
-        })
-
-        if (!user) throw new Error("User not found")
+        noStore()
+        const user = await requireCurrentDbUser()
 
         const entries = await db.entry.findMany({
             where: {
@@ -125,17 +130,14 @@ export async function getJournalEntries({ collectionId, orderBy = "desc" } = {})
 
 export async function getJournalEntry(entryId) {
     try {
-        const { userId } = await auth()
-        if (!userId) throw new Error("Unauthorized")
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId }
-        })
-
-        if (!user) throw new Error("User not found")
+        noStore()
+        const user = await requireCurrentDbUser()
 
         const entry = await db.entry.findFirst({
-            where: { id: entryId },
+            where: {
+                id: entryId,
+                userId: user.id,
+            },
             include: {
                 collection: {
                     select: {
@@ -155,16 +157,13 @@ export async function getJournalEntry(entryId) {
 
 export async function deleteJournalEntry(entryId) {
     try {
-        const { userId } = await auth();
-        if (!userId) throw new Error("Unauthorized");
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId },
-        });
-        if (!user) throw new Error("User not found");
+        const user = await requireCurrentDbUser();
 
         const entry = await db.entry.findFirst({
-            where: { id: entryId },
+            where: {
+                id: entryId,
+                userId: user.id,
+            },
         })
 
         if (!entry) throw new Error("Entry not found")
@@ -182,21 +181,32 @@ export async function deleteJournalEntry(entryId) {
 
 export async function updateJournalEntry(data) {
     try {
-        const { userId } = await auth();
-        if (!userId) throw new Error("Unauthorized");
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId },
-        });
-        if (!user) throw new Error("User not found");
+        const user = await requireCurrentDbUser();
 
         const existingEntry = await db.entry.findFirst({
-            where: { id: data.id },
+            where: {
+                id: data.id,
+                userId: user.id,
+            },
         })
 
         if (!existingEntry) throw new Error("Entry not found")
         const mood = getMoodById(data.mood)
         if (!mood) throw new Error("Invalid mood")
+
+        if (data.collectionId) {
+            const collection = await db.collection.findFirst({
+                where: {
+                    id: data.collectionId,
+                    userId: user.id,
+                },
+                select: {
+                    id: true,
+                },
+            })
+
+            if (!collection) throw new Error("Collection not found")
+        }
         
         let moodImageUrl = existingEntry.moodImageUrl
 
@@ -225,13 +235,8 @@ export async function updateJournalEntry(data) {
 
 export async function getDraft() {
     try {
-        const { userId } = await auth();
-        if (!userId) throw new Error("Unauthorized");
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId },
-        });
-        if (!user) throw new Error("User not found");
+        noStore()
+        const user = await requireCurrentDbUser();
 
         const draft = await db.draft.findUnique({
             where: { userId: user.id },
@@ -249,13 +254,7 @@ export async function getDraft() {
 
 export async function saveDraft(data) {
     try {
-        const { userId } = await auth();
-        if (!userId) throw new Error("Unauthorized");
-
-        const user = await db.user.findUnique({
-            where: { clerkUserId: userId },
-        });
-        if (!user) throw new Error("User not found");
+        const user = await requireCurrentDbUser();
 
         const draft = await db.draft.upsert({
             where: { userId: user.id },

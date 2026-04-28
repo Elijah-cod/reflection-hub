@@ -1,17 +1,12 @@
 "use server"
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { unstable_noStore as noStore } from "next/cache";
+import { requireCurrentDbUser } from "@/lib/current-user";
 
 
 export async function getAnalytics(period = "30d") {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
-
-    if (!user) throw new Error("User not found");
+    noStore();
+    const user = await requireCurrentDbUser();
 
     const startDate = new Date()
     switch (period) {
@@ -65,11 +60,13 @@ export async function getAnalytics(period = "30d") {
 
     const overallStats = {
         totalEntries: entries.length,
-        averageScore: Number(
-            (
-                entries.reduce((acc, entry) => acc + entry.moodScore, 0) / entries.length
-            ).toFixed(1)
-        ),
+        averageScore: entries.length > 0
+            ? Number(
+                (
+                    entries.reduce((acc, entry) => acc + entry.moodScore, 0) / entries.length
+                ).toFixed(1)
+            )
+            : 0,
         mostFrequentedMood: Object.entries(
             entries.reduce((acc, entry) => {
                 acc[entry.mood] = (acc[entry.mood] || 0) + 1
@@ -81,6 +78,7 @@ export async function getAnalytics(period = "30d") {
                 entries.length / (period === "7d" ? 7 : period === "15d" ? 15 : 30)
             ).toFixed(1)
         ),
+        hasEntries: entries.length > 0,
     }
 
 

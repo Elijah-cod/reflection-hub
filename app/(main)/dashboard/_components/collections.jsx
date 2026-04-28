@@ -1,13 +1,15 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
 import CollectionPreview from "./collection-preview"
-import CollectionForm from "@/components/collection-form"
 import { toast } from "sonner";
 import { createCollection } from "@/actions/collection";
 import useFetch from "@/hooks/use-fetch";
 
-
+const CollectionForm = dynamic(() => import("@/components/collection-form"), {
+    ssr: false,
+})
 
 const Collections = ({ collections = [], entriesByCollection }) => {
     const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
@@ -46,12 +48,16 @@ const Collections = ({ collections = [], entriesByCollection }) => {
                     ))
                 }
 
-                <CollectionForm
-                    loading = {createCollectionLoading}
-                    onSuccess =  {handleCreateCollection}
-                    open = {isCollectionDialogOpen}
-                    setOpen = {setIsCollectionDialogOpen}
-                />
+                {
+                    isCollectionDialogOpen && (
+                        <CollectionForm
+                            loading = {createCollectionLoading}
+                            onSuccess =  {handleCreateCollection}
+                            open = {isCollectionDialogOpen}
+                            setOpen = {setIsCollectionDialogOpen}
+                        />
+                    )
+                }
             </div>
         </section>
     )

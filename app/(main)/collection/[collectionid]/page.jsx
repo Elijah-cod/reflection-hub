@@ -7,8 +7,10 @@ import JournalFilters from "../_components/journal-filters";
 
 const CollectionsPage = async({params}) => {
     const {collectionid} =  await params
-    const entries = await getJournalEntries({ collectionId: collectionid })
-    const collection = await getCollection(collectionid)
+    const [entries, collection] = await Promise.all([
+        getJournalEntries({ collectionId: collectionid }),
+        collectionid === "unorganized" ? Promise.resolve(null) : getCollection(collectionid),
+    ])
 
     return(
         <div className="space-y-6">

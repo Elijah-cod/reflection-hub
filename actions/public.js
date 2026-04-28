@@ -6,16 +6,16 @@ export const getDailyPrompt = unstable_cache(
     async() => {
         try {
             const res = await fetch("https://api.adviceslip.com/advice", {
-                cache: "no-store"
+                next: {
+                    revalidate: 86400,
+                },
+                signal: AbortSignal.timeout(1500),
             })
 
             const data = await res.json()
             return data.slip.advice
         } catch (error) {
-            return {
-                success: false,
-                data: "What's on your mind today",
-            }
+            return "What's on your mind today"
         }
     },["daily-prompt"],
     {

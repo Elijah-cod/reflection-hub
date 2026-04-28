@@ -1,20 +1,13 @@
 "use server"
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma"
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { collectionSchema } from "@/app/lib/schema";
+import { requireCurrentDbUser } from "@/lib/current-user";
 
 export async function createCollection(data) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const user = await requireCurrentDbUser();
 
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-    if (!user) throw new Error("User not found");
-
-    // ✅ validate + sanitize incoming data
     const validated = collectionSchema.parse(data);
 
     const collection = await db.collection.create({
@@ -34,17 +27,12 @@ export async function createCollection(data) {
 
 
 export async function getCollections() {
-        const {userId} = await auth()
-        if(!userId) throw new Error("Unauthorized")
-        
-        const user = await db.user.findUnique({
-                    where: { clerkUserId: userId },
-                })
-        if (!user) throw new Error("User not found")
-        
+        noStore()
+        const user = await requireCurrentDbUser()
+
         const collections = await db.collection.findMany({
             where: {
-                userId: user.Id,
+                userId: user.id,
             },
             orderBy: {
                 createdAt: "desc"
@@ -56,16 +44,14 @@ export async function getCollections() {
 
 
 export async function getCollection(collectionId) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  noStore()
+  const user = await requireCurrentDbUser();
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) throw new Error("User not found");
-
-  const collection = await db.collection.findUnique({
-    where: { id: collectionId }, 
+  const collection = await db.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId: user.id,
+    },
   });
 
   return collection;
@@ -74,16 +60,13 @@ export async function getCollection(collectionId) {
 
 export async function deleteCollection(collectionId) {
   try{
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-    if (!user) throw new Error("User not found");
+    const user = await requireCurrentDbUser();
 
     const collection = await db.collection.findFirst({
-      where: { id: collectionId }, 
+      where: {
+        id: collectionId,
+        userId: user.id,
+      },
     })
 
     if (!collection) throw new Error("Collection not found")

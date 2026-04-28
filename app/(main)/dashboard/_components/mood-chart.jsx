@@ -28,6 +28,19 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const MoodChart = ({ timeline }) => {
+  if (!timeline?.length) {
+    return (
+      <div className="flex h-[300px] w-full items-center justify-center rounded-lg border border-dashed border-orange-200 bg-orange-50/40 text-center">
+        <div className="space-y-2 px-6">
+          <p className="text-lg font-semibold text-orange-900">No mood activity yet</p>
+          <p className="text-sm text-orange-700">
+            Your chart will appear after you add a few journal entries.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">

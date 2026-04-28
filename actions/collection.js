@@ -1,6 +1,6 @@
 "use server"
 import { db } from "@/lib/prisma"
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { collectionSchema } from "@/app/lib/schema";
 import { requireCurrentDbUser } from "@/lib/current-user";
 
@@ -27,6 +27,7 @@ export async function createCollection(data) {
 
 
 export async function getCollections() {
+        noStore()
         const user = await requireCurrentDbUser()
 
         const collections = await db.collection.findMany({
@@ -43,6 +44,7 @@ export async function getCollections() {
 
 
 export async function getCollection(collectionId) {
+  noStore()
   const user = await requireCurrentDbUser();
 
   const collection = await db.collection.findFirst({

@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_noStore as noStore } from "next/cache"
 import { db } from "@/lib/prisma"
 import { getMoodById } from "@/app/lib/moods"
 import { getPixabayImage } from "@/actions/public";
@@ -84,6 +84,7 @@ export async function createJournalEntry(data) {
 
 export async function getJournalEntries({ collectionId, orderBy = "desc" } = {}) {
     try {
+        noStore()
         const user = await requireCurrentDbUser()
 
         const entries = await db.entry.findMany({
@@ -129,6 +130,7 @@ export async function getJournalEntries({ collectionId, orderBy = "desc" } = {})
 
 export async function getJournalEntry(entryId) {
     try {
+        noStore()
         const user = await requireCurrentDbUser()
 
         const entry = await db.entry.findFirst({
@@ -233,6 +235,7 @@ export async function updateJournalEntry(data) {
 
 export async function getDraft() {
     try {
+        noStore()
         const user = await requireCurrentDbUser();
 
         const draft = await db.draft.findUnique({

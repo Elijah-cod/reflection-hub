@@ -1,9 +1,11 @@
 "use server"
 import { db } from "@/lib/prisma";
+import { unstable_noStore as noStore } from "next/cache";
 import { requireCurrentDbUser } from "@/lib/current-user";
 
 
 export async function getAnalytics(period = "30d") {
+    noStore();
     const user = await requireCurrentDbUser();
 
     const startDate = new Date()
@@ -76,6 +78,7 @@ export async function getAnalytics(period = "30d") {
                 entries.length / (period === "7d" ? 7 : period === "15d" ? 15 : 30)
             ).toFixed(1)
         ),
+        hasEntries: entries.length > 0,
     }
 
 
